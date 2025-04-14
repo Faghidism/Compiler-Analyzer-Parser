@@ -1,0 +1,161 @@
+import java_cup.runtime.*;
+
+
+
+parser code  {: 
+  public void report_error(String message, Object info) {
+    StringBuilder m = new StringBuilder("Error");
+   
+        if (info instanceof java_cup.runtime.Symbol) {
+           
+            java_cup.runtime.Symbol s = ((java_cup.runtime.Symbol) info);
+   
+            if (s.left >= 0) {                
+               
+                m.append(" in line "+(s.left+1));   
+               
+                if (s.right >= 0)                    
+                   
+                    m.append(", column "+(s.right+1));
+            }
+        }
+   
+       
+        m.append(" : "+message);
+   
+      
+        System.err.println(m);
+  }
+   
+  public void report_fatal_error(String message, Object info) {
+    report_error(message, info);
+    throw new RuntimeException("Fatal Syntax Error");
+  }
+:};
+
+
+terminal  LBRACE, RBRACE, VOID, SEMICOLON, LPAREN, RPAREN, WHILE, FOR,  IF, LT, GT, EQ, DO;
+
+
+terminal java.lang.Number INTEGER;
+terminal java.lang.Number FLOATING_POINT_LITERAL;
+terminal java.lang.Boolean BOOLEAN_LITERAL;
+terminal java.lang.Character CHARACTER_LITERAL;
+terminal java.lang.String STRING_LITERAL;
+terminal java.lang.String IDENTIFIER; // name
+terminal NULL_LITERAL;
+
+non terminal block, goal, compilation_unit, func_declaration, func_header,  func_body;
+non terminal func_declarator, statement, block_statements_opt, block_statements, if_statement, while_statement, for_statement, if_then_else_statement;
+non terminal statement2, empty_statement, expression;
+non terminal relational_expression, conditional_expression, assignment_expression, expression_opt;
+non terminal expression_statement, statement_expression , assignment, assignment_operator, do_statement;
+
+start with goal;
+
+//  The Syntactic Grammar
+goal ::=	compilation_unit
+	;
+	
+compilation_unit ::= func_declaration
+	;
+
+func_declaration ::=
+		func_header func_body
+	;
+
+func_header ::=
+		 VOID func_declarator 
+	;
+
+func_declarator ::=
+	IDENTIFIER LPAREN RPAREN
+    ;
+
+func_body ::=	block
+	|	SEMICOLON
+	;
+    	
+block ::=	LBRACE block_statements_opt RBRACE
+;
+
+block_statements_opt ::=
+	|	block_statements
+;
+block_statements ::=
+		statement
+	|	block_statements statement
+;
+
+statement ::=	
+	statement2
+	| if_statement
+	|	while_statement
+	|	for_statement
+	;
+
+statement2 ::=
+		block
+	|	empty_statement
+	|	expression_statement
+	|	do_statement
+	
+;
+
+expression_statement ::=
+	statement_expression SEMICOLON
+;
+statement_expression ::=
+	assignment
+;
+
+empty_statement ::=
+		SEMICOLON
+	;
+
+
+assignment ::=	IDENTIFIER assignment_operator INTEGER
+	;
+
+assignment_operator ::=
+		EQ
+	;
+
+
+if_statement ::=
+		IF LPAREN expression RPAREN statement
+	;
+
+expression_opt ::=
+	|	expression
+	;
+expression ::=	assignment_expression
+	;
+
+assignment_expression ::=
+		conditional_expression
+	
+	;
+
+conditional_expression ::=
+		relational_expression
+	
+	;
+
+relational_expression ::=
+		IDENTIFIER LT IDENTIFIER
+	|	IDENTIFIER GT IDENTIFIER
+	;
+
+
+while_statement ::=
+		WHILE LPAREN expression RPAREN statement
+	;
+do_statement ::=
+		DO statement WHILE LPAREN expression RPAREN SEMICOLON
+	;
+
+for_statement ::=
+		FOR LPAREN  SEMICOLON expression_opt SEMICOLON
+			 RPAREN statement
+	;

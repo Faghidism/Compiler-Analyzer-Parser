@@ -1,0 +1,10 @@
+void name1(){
+
+	x=3;
+	y=4;
+	while(x>y){
+		if(x>y){
+
+		}
+	}
+}
